@@ -29,4 +29,8 @@ jobs:
         run: chmod +x gradlew # gradlew 파일에 실행 권한을 부여
 
       - name: Build with Gradle
+        env: # MySQL에 연결하도록 환경 변수 전달
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ secrets.MYSQL_DATABASE }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.MYSQL_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         run: ./gradlew clean build # 빌드 이전 상태로 돌리고 다시 빌드 명령어
