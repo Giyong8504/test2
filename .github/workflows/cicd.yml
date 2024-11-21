@@ -9,30 +9,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest # 실행 환경 지정
-    services:
-      mysql:
-        image: mysql:8.0
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
 
     # 실행 스텝 지정
     steps:
+      - uses: mirromutth/mysql-action@v1.1
+        with:
+          container port: 3306
+          mysql database: quizboard
+          mysql user: quizboard
+          mysql password: ${{ secrets.DatabasePassword }}
+
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          distribution: 'corretto'
           java-version: '17'
+          distribution: 'corretto'
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew # gradlew 파일에 실행 권한을 부여
 
       - name: Build with Gradle
-        env: # MySQL에 연결하도록 환경 변수 전달
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ secrets.MYSQL_DATABASE }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.MYSQL_USER }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         run: ./gradlew clean build # 빌드 이전 상태로 돌리고 다시 빌드 명령어
