@@ -19,6 +19,11 @@ jobs:
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
           # MySQL 컨테이너가 제대로 시작되었는지 확인
+        options: >
+          --health-cmd='mysqladmin ping -h localhost'
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=3
 
     # 실행 스텝 지정
     steps:
@@ -30,6 +35,15 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew # gradlew 파일에 실행 권한을 부여
+
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..10}; do
+            nc -z localhost 3306 && echo "MySQL is ready" && exit 0
+            echo "Waiting for MySQL..."
+            sleep 5
+          done
+          echo "MySQL failed to start" && exit 1
 
       - name: Build with Gradle
         env: # MySQL에 연결하도록 환경 변수 전달
