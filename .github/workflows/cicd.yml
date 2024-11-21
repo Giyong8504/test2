@@ -9,6 +9,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest # 실행 환경 지정
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          # MySQL 컨테이너가 제대로 시작되었는지 확인
 
     # 실행 스텝 지정
     steps:
@@ -18,24 +28,8 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
 
-      - name: Setup MySQL
-        uses: mirromutth/mysql-action@v1.1
-        with:
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew # gradlew 파일에 실행 권한을 부여
-
-      - name: Wait for MySQL to be ready
-        run: |
-          for i in {1..10}; do
-            nc -z localhost 3306 && echo "MySQL is ready" && exit 0
-            echo "Waiting for MySQL..."
-            sleep 5
-          done
-          echo "MySQL failed to start" && exit 1
 
       - name: Build with Gradle
         env: # MySQL에 연결하도록 환경 변수 전달
