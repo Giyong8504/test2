@@ -9,21 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest # 실행 환경 지정
-    services:
-      mysql:
-        image: mysql:8.0
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          # MySQL 컨테이너가 제대로 시작되었는지 확인
-        options: >
-          --health-cmd='mysqladmin ping -h localhost'
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=3
 
     # 실행 스텝 지정
     steps:
@@ -32,6 +17,13 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '17'
+
+      - name: Setup MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew # gradlew 파일에 실행 권한을 부여
